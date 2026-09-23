@@ -15,6 +15,26 @@ import (
 	"github.com/dayflower/echoview/internal/profile"
 )
 
+func TestVersionOutput(t *testing.T) {
+	original := version
+	t.Cleanup(func() { version = original })
+	for _, test := range []struct {
+		name    string
+		version string
+	}{
+		{name: "local build", version: "0.1.0"},
+		{name: "release build", version: "1.2.3"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			version = test.version
+			code, stdout, stderr := runForTest(t, []string{"--version"})
+			if code != 0 || stdout != test.version+"\n" || stderr != "" {
+				t.Fatalf("--version: code=%d stdout=%q stderr=%q", code, stdout, stderr)
+			}
+		})
+	}
+}
+
 func TestPrintPropertyShowsSNAAnnotation(t *testing.T) {
 	output, err := os.CreateTemp(t.TempDir(), "discover-output")
 	if err != nil {

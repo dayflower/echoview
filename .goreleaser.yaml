@@ -1,0 +1,59 @@
+version: 2
+project_name: echoview
+
+builds:
+  - id: echoview
+    main: ./cmd/echoview
+    binary: echoview
+    env:
+      - CGO_ENABLED=0
+    targets:
+      - linux_amd64_v1
+      - linux_arm64
+      - darwin_arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - id: binaries
+    ids:
+      - echoview
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+      - src: catalog/*
+        dst: catalog
+        strip_parent: true
+      - src: examples/profiles/*
+        dst: catalog
+        strip_parent: true
+
+nfpms:
+  - id: packages
+    ids:
+      - echoview
+    package_name: echoview
+    vendor: dayflower
+    homepage: https://github.com/dayflower/echoview
+    maintainer: dayflower
+    description: ECHONET Lite command-line tool
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    contents:
+      - src: catalog/*
+        dst: /etc/echoview/catalog/
+        type: config|noreplace
+      - src: examples/profiles/*
+        dst: /etc/echoview/catalog/
+        type: config|noreplace
+
+checksum:
+  name_template: checksums.txt
