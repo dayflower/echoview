@@ -1,0 +1,22 @@
+class Echoview < Formula
+  desc "ECHONET Lite command-line tool"
+  homepage "https://github.com/dayflower/echoview"
+  version "{{version}}"
+  license "MIT"
+
+  url "{{artifacts.darwin_arm64.url}}"
+  sha256 "{{artifacts.darwin_arm64.sha256}}"
+
+  depends_on :macos
+  depends_on arch: :arm64
+
+  def install
+    libexec.install "echoview", "catalog"
+    bin.write_exec_script libexec/"echoview"
+  end
+
+  test do
+    assert_equal version.to_s, shell_output("#{bin}/echoview --version").strip
+    assert_path_exists libexec/"catalog/echonet_lite_catalog.yaml"
+  end
+end

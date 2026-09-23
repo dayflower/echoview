@@ -4,13 +4,24 @@ on:
   push:
     tags:
       - 'v*'
-
-permissions:
-  contents: write
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing GitHub Release tag to publish to Homebrew
+        required: true
+        type: string
+      dry_run:
+        description: Render the Formula without updating the tap
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -32,3 +43,31 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  homebrew:
+    needs: release
+    if: ${{ always() && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dayflower/brew-up@a05113ea737699ae9f7079a1683e222413f4644e # v1.2.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release-tag: ${{ inputs.release_tag || github.ref_name }}
+          template-path: .github/homebrew/echoview.rb.mustache
+          output-path: Formula/echoview.rb
+          asset-map: |
+            darwin_arm64=echoview_{{version}}_darwin_arm64.tar.gz
+          checksum-asset: checksums.txt
+          target-repo: dayflower/homebrew-tap
+          target-branch: main
+          target-repo-token: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
+          publish-mode: pr
+          only-if-changed: true
+          dry-run: ${{ inputs.dry_run || false }}
+          publish-title-template: 'chore: update echoview formula for {{tag_name}}'
+          publish-body-template: 'Co-authored-by: codex <codex@openai.com>'
+          publish-attribution: pr
