@@ -26,27 +26,19 @@ home-automation platform.
 The installed catalog directory is loaded by default, so ordinary use does not
 require Python, `uv`, or an external MRA download.
 
-## Build
+## Install
 
-From the repository root:
+On macOS arm64, install with Homebrew:
 
 ```sh
-make build
-./bin/echoview --version
+brew install dayflower/tap/echoview
+echoview --version
 ```
 
-The binary is written to `bin/echoview`, with its packaged catalog in
-`bin/catalog/`. At startup, Echoview layers the OS-wide catalog directory,
-the executable-relative `catalog/` directory, and the user catalog directory.
-To choose the local interface used for ECHONET Lite traffic, pass `--interface`
-to a command. This is especially useful on hosts with Wi-Fi, Ethernet, VPN, or
-container interfaces.
-
-## Releases
-
-Pushing a `vX.Y.Z` tag runs the release workflow. It runs `make ci`, builds the
-following artifacts with GoReleaser, and uploads them with checksums to GitHub
-Releases:
+The Homebrew package includes the catalog, so no separate catalog setup is
+needed. Prebuilt archives and Linux packages are available on
+[GitHub Releases](https://github.com/dayflower/echoview/releases), alongside
+`checksums.txt`:
 
 | Platform | Artifacts |
 | --- | --- |
@@ -64,24 +56,37 @@ profiles become available for explicit assignment; they are never selected
 automatically. Catalog files under `/etc/echoview/catalog/` are treated as
 package configuration files so local edits are preserved during upgrades.
 
-Before tagging a release, run `make ci` and `goreleaser release --snapshot
---clean` to inspect the artifacts under `dist/`. GoReleaser sets the released
-binary's `--version` output from the tag; an ordinary `make build` retains the
-source default.
+## Build from source
+
+From the repository root:
+
+```sh
+make build
+./bin/echoview --version
+```
+
+The binary is written to `bin/echoview`, with its packaged catalog in
+`bin/catalog/`. At startup, Echoview layers the OS-wide catalog directory,
+the executable-relative `catalog/` directory, and the user catalog directory.
 
 ## Quick start
+
+The examples below use the installed `echoview` command. If you built from
+source, use `./bin/echoview` instead. To choose the local interface used for
+ECHONET Lite traffic, pass `--interface` to a command. This is especially
+useful on hosts with Wi-Fi, Ethernet, VPN, or container interfaces.
 
 ### 1. Discover devices
 
 ```sh
-./bin/echoview discover --interface 192.168.1.10
+echoview discover --interface 192.168.1.10
 ```
 
 Discovery uses multicast by default. If multicast is unavailable, query one
 or more known addresses directly:
 
 ```sh
-./bin/echoview discover --target 192.168.1.20 --target 192.168.1.21
+echoview discover --target 192.168.1.20 --target 192.168.1.21
 ```
 
 ### 2. Inspect one device
@@ -89,14 +94,14 @@ or more known addresses directly:
 Use an address to discover and read its node profile and device instances:
 
 ```sh
-./bin/echoview dump --target 192.168.1.20
+echoview dump --target 192.168.1.20
 ```
 
 To read a particular object only, include its EOJ. EOJs use uppercase
 hexadecimal with a `0x` prefix:
 
 ```sh
-./bin/echoview dump --target 192.168.1.20/0x027D01 --show-raw
+echoview dump --target 192.168.1.20/0x027D01 --show-raw
 ```
 
 `dump` accepts `--format text`, `--format json`, and
@@ -108,7 +113,7 @@ Generate a starter file from an inspected device, then review the selected
 properties and metric names before using it in production:
 
 ```sh
-./bin/echoview dump \
+echoview dump \
   --target 192.168.1.20 \
   --format metrics-config > instances.yaml
 ```
@@ -116,8 +121,8 @@ properties and metric names before using it in production:
 ### 4. Read configured properties once
 
 ```sh
-./bin/echoview get --config instances.yaml
-./bin/echoview get --config instances.yaml --format json
+echoview get --config instances.yaml
+echoview get --config instances.yaml --format json
 ```
 
 ## Recurring collection
@@ -129,14 +134,14 @@ interval and batch size.
 ### Watch the terminal
 
 ```sh
-./bin/echoview watch --config instances.yaml
-./bin/echoview watch --config instances.yaml --format jsonl
+echoview watch --config instances.yaml
+echoview watch --config instances.yaml --format jsonl
 ```
 
 ### Expose Prometheus metrics
 
 ```sh
-./bin/echoview exporter --config instances.yaml
+echoview exporter --config instances.yaml
 curl http://127.0.0.1:13610/metrics
 ```
 
@@ -147,7 +152,7 @@ they never initiate ECHONET Lite traffic themselves.
 To listen elsewhere, specify both the address and port as needed:
 
 ```sh
-./bin/echoview exporter \
+echoview exporter \
   --config instances.yaml \
   --listen-address 0.0.0.0 \
   --listen-port 13610
@@ -159,7 +164,7 @@ an appropriate firewall or reverse proxy in front of that endpoint.
 ### Publish to MQTT
 
 ```sh
-./bin/echoview mqtt \
+echoview mqtt \
   --config instances.yaml \
   --broker mqtts://broker.example.net:8883 \
   --username echoview \
@@ -223,7 +228,7 @@ set, repeat `--catalog-dir`; supplied directories replace the defaults and are
 merged in the specified order:
 
 ```sh
-./bin/echoview dump \
+echoview dump \
   --catalog-dir /opt/echoview/base \
   --catalog-dir ./local-catalog \
   --target 192.168.1.20
@@ -244,7 +249,7 @@ For a one-off `dump`, use a catalog directory containing that profile and an
 explicit assignment:
 
 ```sh
-./bin/echoview dump \
+echoview dump \
   --target 192.168.1.20/0x027D01 \
   --catalog-dir ./catalog \
   --instance-profile 192.168.1.20/0x027D01=sharp_storage_battery_jw_wb2521
@@ -277,47 +282,10 @@ configuration, and `4` for fatal runtime failures.
 - [JSON output contract](notes/json-output-contract.md) — machine-readable result shape.
 - [Prometheus and MQTT contract](notes/publish-contract.md) — publication semantics and topics.
 - [Catalog schema](spec/catalog-schema.md) — generated catalog format.
+- [Development guide](notes/development.md) — local checks, catalog generation, and releases.
 
-Run `./bin/echoview <command> --help` for the authoritative option list.
+Run `echoview <command> --help` for the authoritative option list.
 
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
-
-## Development
-
-Run all local CI checks:
-
-```sh
-make ci
-```
-
-Run the language-specific checks individually:
-
-```sh
-make ci-go
-make ci-python
-```
-
-The Python target runs unit tests, Ruff lint checks, and Ruff formatting checks.
-`make ci` also runs `make validate-overrides` and `make validate-catalog`.
-Use `make lint-go`, `make lint-python`, `make format-check-go`, or
-`make format-check-python` to run individual checks.
-
-The catalog is generated from ECHONET Lite MRA data. When changing catalog
-inputs or generator behavior, validate the overrides and regenerate it by
-setting `MRA_ROOT` to the directory that contains the MRA release:
-
-```sh
-make validate-overrides
-MRA_ROOT=/path/to/MRA_v1.4.0 make catalog
-MRA_ROOT=/path/to/MRA_v1.4.0 make catalog-check
-```
-
-When `MRA_ROOT` is set, `make ci` also checks that the generated catalog
-matches that MRA release. Without it, `make ci` still validates the catalog's
-structural schema.
-
-Do not edit `catalog/echonet_lite_catalog.yaml` directly. See
-[AGENTS.md](AGENTS.md) for repository conventions and the full verification
-matrix.
