@@ -42,6 +42,33 @@ To choose the local interface used for ECHONET Lite traffic, pass `--interface`
 to a command. This is especially useful on hosts with Wi-Fi, Ethernet, VPN, or
 container interfaces.
 
+## Releases
+
+Pushing a `vX.Y.Z` tag runs the release workflow. It runs `make ci`, builds the
+following artifacts with GoReleaser, and uploads them with checksums to GitHub
+Releases:
+
+| Platform | Artifacts |
+| --- | --- |
+| Linux amd64 and arm64 | `.tar.gz`, `.deb`, `.rpm` |
+| macOS arm64 | `.tar.gz` |
+
+Each archive contains `echoview`, `README.md`, `LICENSE`, and a `catalog/`
+directory beside the executable. The archive catalog contains the generated
+base catalog and the vendor profiles from `examples/profiles/`. Extract the
+archive as a unit so the executable-relative catalog remains available.
+
+The Linux packages install the executable at `/usr/bin/echoview` and both the
+base catalog and example vendor profiles at `/etc/echoview/catalog/`. The
+profiles become available for explicit assignment; they are never selected
+automatically. Catalog files under `/etc/echoview/catalog/` are treated as
+package configuration files so local edits are preserved during upgrades.
+
+Before tagging a release, run `make ci` and `goreleaser release --snapshot
+--clean` to inspect the artifacts under `dist/`. GoReleaser sets the released
+binary's `--version` output from the tag; an ordinary `make build` retains the
+source default.
+
 ## Quick start
 
 ### 1. Discover devices
