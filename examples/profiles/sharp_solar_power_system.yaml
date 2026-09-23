@@ -1,0 +1,120 @@
+catalog_format: 1
+
+profiles:
+  sharp_storage_battery_jw_wb2521:
+    class: "0x027D"
+    name:
+      en: SHARP Storage Battery JH-WB2521
+      ja: SHARP 蓄電池 JH-WB2521
+    match:
+      required:
+        "0x8A": ["0x000005"]
+      optional:
+        "0x8B": ["0x313132"]
+    collection:
+      properties:
+        "0xA8": { request: single }
+        "0xA9": { request: single }
+        "0xF2": { enabled: false }
+        "0xF7": { enabled: false }
+
+  sharp_solar_power_system_controller:
+    class: "0x05FF"
+    name:
+      en: SHARP Solar Power System Controller
+      ja: SHARP 太陽光発電システムコントローラー
+    match:
+      required:
+        "0x8A": ["0x000005"]
+      optional:
+        "0x8B": ["0x313132"]
+    properties:
+      "0xF2":
+        name: { en: Instantaneous Electric Power Sold, ja: 瞬時売電電力 }
+        short_name: instantaneous_electric_power_sold
+        access: { get: optional }
+        codec: { kinds: [{ kind: uint, bytes: 4, scale: "0.1", unit: W }] }
+      "0xF3":
+        name: { en: Instantaneous Electric Power Bought, ja: 瞬時買電電力 }
+        short_name: instantaneous_electric_power_bought
+        access: { get: optional }
+        codec: { kinds: [{ kind: uint, bytes: 4, scale: "0.1", unit: W }] }
+      "0xF4":
+        name: { en: Cumulative Electric Energy Sold, ja: 積算売電電力量 }
+        short_name: cumulative_electric_energy_sold
+        access: { get: optional }
+        prometheus: { metric_type: counter }
+        codec: { kinds: [{ kind: uint, bytes: 4, unit: Wh }] }
+      "0xF5":
+        name: { en: Cumulative Electric Energy Bought, ja: 積算買電電力量 }
+        short_name: cumulative_electric_energy_bought
+        access: { get: optional }
+        prometheus: { metric_type: counter }
+        codec: { kinds: [{ kind: uint, bytes: 4, unit: Wh }] }
+      "0xF6":
+        name: { en: Instantaneous External Power Output, ja: 瞬時外部電源出力 }
+        short_name: instantaneous_external_power_output
+        access: { get: optional }
+        codec: { kinds: [{ kind: uint, bytes: 4, scale: "0.1", unit: W }] }
+      "0xF7":
+        name: { en: Cumulative External Power Output, ja: 積算外部電源出力 }
+        short_name: cumulative_external_power_output
+        access: { get: optional }
+        prometheus: { metric_type: counter }
+        codec: { kinds: [{ kind: uint, bytes: 4, unit: Wh }] }
+
+  sharp_household_solar_power_generation:
+    class: "0x0279"
+    name:
+      en: SHARP Household Solar Power Generation
+      ja: SHARP 住宅用太陽光発電
+    match:
+      required:
+        "0x8A": ["0x000005"]
+      optional:
+        "0x8B": ["0x313132"]
+    properties:
+      "0xF2":
+        name: { en: Input Voltage, ja: 入力電圧 }
+        short_name: input_voltage
+        access: { get: optional }
+        codec:
+          kinds:
+            - kind: array
+              itemSize: 2
+              minItems: 4
+              maxItems: 4
+              items: { kind: uint, bytes: 2, unit: V }
+      "0xF3":
+        name: { en: Input Current, ja: 入力電流 }
+        short_name: input_current
+        access: { get: optional }
+        codec:
+          kinds:
+            - kind: array
+              itemSize: 1
+              minItems: 4
+              maxItems: 4
+              items: { kind: uint, bytes: 1, unit: A }
+      "0xF4":
+        name: { en: Input Power, ja: 入力電力 }
+        short_name: input_power
+        access: { get: optional }
+        codec:
+          kinds:
+            - kind: array
+              itemSize: 2
+              minItems: 4
+              maxItems: 4
+              items: { kind: uint, bytes: 2, unit: W }
+      "0xF5":
+        name: { en: Unknown, ja: 不明 }
+        short_name: unknown_f5
+        access: { get: optional }
+        codec:
+          kinds:
+            - kind: array
+              itemSize: 2
+              minItems: 4
+              maxItems: 4
+              items: { kind: uint, bytes: 2 }

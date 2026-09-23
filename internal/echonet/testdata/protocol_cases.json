@@ -1,0 +1,57 @@
+[
+  {
+    "name": "get request with two EPCs",
+    "packet": "1081123405FF01027D01620280009F00",
+    "valid": true,
+    "tid": 4660,
+    "seoj": "0x05FF01",
+    "deoj": "0x027D01",
+    "esv": 98,
+    "properties": [{"epc": 128, "edt": ""}, {"epc": 159, "edt": ""}]
+  },
+  {
+    "name": "partial get response",
+    "packet": "10811234027D0105FF0172028001309F00",
+    "valid": true,
+    "tid": 4660,
+    "seoj": "0x027D01",
+    "deoj": "0x05FF01",
+    "esv": 114,
+    "properties": [{"epc": 128, "edt": "30"}, {"epc": 159, "edt": ""}]
+  },
+  {
+    "name": "get sna with returned EDT",
+    "packet": "10811234027D0105FF0152028001309F00",
+    "valid": true,
+    "tid": 4660,
+    "seoj": "0x027D01",
+    "deoj": "0x05FF01",
+    "esv": 82,
+    "properties": [{"epc": 128, "edt": "30"}, {"epc": 159, "edt": ""}]
+  },
+  {
+    "name": "instance list notification",
+    "packet": "108112340EF00105FF017301D60401027D01",
+    "valid": true,
+    "tid": 4660,
+    "seoj": "0x0EF001",
+    "deoj": "0x05FF01",
+    "esv": 115,
+    "properties": [{"epc": 214, "edt": "01027D01"}]
+  },
+  {
+    "name": "truncated EDT",
+    "packet": "10811234027D0105FF017201800230",
+    "valid": false
+  },
+  {
+    "name": "trailing data",
+    "packet": "10811234027D0105FF01720180013000",
+    "valid": false
+  },
+  {
+    "name": "wrong EHD",
+    "packet": "10821234027D0105FF017201800130",
+    "valid": false
+  }
+]

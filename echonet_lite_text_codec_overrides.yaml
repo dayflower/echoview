@@ -1,0 +1,282 @@
+codec_overrides_format: 1
+source:
+  appendix:
+    document: Appendix_Release_R_r4.pdf
+    release: R rev.4
+selection:
+  classes:
+  - superClass
+  - devices
+  exclude:
+  - nodeProfile
+  rule: Text codecs selected from the Appendix and checked against MRA availability.
+classes:
+  '0x0000':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 39
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+      '0x8D':
+        name:
+          en: Production number
+          ja: 製造番号
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 39
+            summary: 12-byte ASCII production number; right padding is NUL or space.
+  '0x0279':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 252
+            - 258
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+  '0x027D':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 282
+            - 290
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+  '0x027E':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 304
+            - 312
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+  '0x0281':
+    properties:
+      '0xE5':
+        name:
+          en: ID number setting
+          ja: ID番号設定
+        codec:
+          kinds:
+          - kind: text
+            bytes: 6
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 333
+            summary: Six-byte ASCII representation for the meter ID number.
+      '0xE6':
+        name:
+          en: Verification expiration information
+          ja: 検定満期情報
+        codec:
+          kinds:
+          - kind: text
+            bytes: 6
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 333
+            - 334
+            summary: Six-byte ASCII representation of the verification expiry year
+              and month.
+  '0x02A5':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 473
+            - 476
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+  '0x02A7':
+    properties:
+      '0x8C':
+        name:
+          en: Product code
+          ja: 商品コード
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 510
+            - 525
+            summary: 12-byte ASCII product code; right padding is NUL or space.
+      '0x8D':
+        name:
+          en: Production number
+          ja: 製造番号
+        codec:
+          kinds:
+          - kind: text
+            bytes: 12
+            trim_right:
+            - nul
+            - space
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 510
+            - 526
+            summary: 12-byte ASCII production number; right padding is NUL or space.
+  '0x05FF':
+    properties:
+      '0xC5':
+        name:
+          en: Name
+          ja: 名称
+        codec:
+          kinds:
+          - kind: text
+            encoding: utf-8
+            min_bytes: 1
+            max_bytes: 64
+            bom: false
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 640
+            summary: UTF-8 name without a BOM, up to 64 bytes.
+      '0xC8':
+        name:
+          en: Product code of the device to be controlled
+          ja: 管理対象機器商品コード
+        codec:
+          kinds:
+          - kind: text
+            min_bytes: 1
+            max_bytes: 12
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 640
+            summary: ASCII identifier with a maximum length of 12 bytes.
+      '0xE0':
+        name:
+          en: Address of installation location
+          ja: 設置住所
+        codec:
+          kinds:
+          - kind: text
+            encoding: utf-8
+            min_bytes: 1
+            max_bytes: 255
+            bom: false
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 641
+            summary: UTF-8 address without a BOM, up to 255 bytes.
+  '0x0602':
+    properties:
+      '0xB3':
+        name:
+          en: Character string to present to the user
+          ja: 伝達文字列設定
+        codec:
+          kinds:
+          - kind: encoded_text
+            length_byte: 0
+            encoding_byte: 1
+            reserved_byte: 2
+            text_offset: 3
+            max_text_bytes: 244
+            encodings:
+              '0x01': us-ascii
+              '0x02': shift_jis
+              '0x03': iso-2022-jp
+              '0x04': euc_jp
+              '0x05': ucs-4
+              '0x06': ucs-2
+              '0x07': latin-1
+              '0x08': utf-8
+        x-source:
+          appendix:
+            document: Appendix_Release_R_r4.pdf
+            pages:
+            - 699
+            - 700
+            - 702
+            summary: Length- and encoding-prefixed character data with eight defined
+              encodings.

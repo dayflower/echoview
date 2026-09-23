@@ -1,0 +1,20 @@
+[
+  {
+    "name": "d5_instance_list",
+    "packet": "108100070EF00105FF017301D50702027D01013001",
+    "valid_instance_list": true,
+    "eojs": ["0x027D01", "0x013001"]
+  },
+  {
+    "name": "d6_instance_list",
+    "packet": "108100070EF00105FF017301D60401027D01",
+    "valid_instance_list": true,
+    "eojs": ["0x027D01"]
+  },
+  {
+    "name": "malformed_instance_list",
+    "packet": "108100070EF00105FF017301D50402027D01",
+    "valid_instance_list": false,
+    "eojs": []
+  }
+]

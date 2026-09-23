@@ -1,0 +1,6 @@
+prometheus_overrides_format: 1
+source:
+  appendix:
+    document: Appendix_Release_R_r4.pdf
+    release: R
+classes: {}

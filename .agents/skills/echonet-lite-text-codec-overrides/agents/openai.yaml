@@ -1,0 +1,4 @@
+interface:
+  display_name: "ECHONET Lite Text Codec Overrides"
+  short_description: "Generate ECHONET Lite text codec overrides"
+  default_prompt: "Use $echonet-lite-text-codec-overrides to generate echonet_lite_text_codec_overrides.yaml from the supplied Appendix and MRA release."
