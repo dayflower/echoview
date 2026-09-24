@@ -65,7 +65,7 @@ jobs:
           target-repo: dayflower/homebrew-tap
           target-branch: main
           target-repo-token: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
-          publish-mode: pr
+          publish-mode: pr-auto-merge
           only-if-changed: true
           dry-run: ${{ inputs.dry_run || false }}
           publish-title-template: 'chore: update echoview formula for {{tag_name}}'

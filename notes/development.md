@@ -51,10 +51,12 @@ ordinary `make build` retains the source default.
 
 After GoReleaser publishes a tagged release, the workflow uses
 [`brew-up`](https://github.com/dayflower/brew-up) to open a pull request that
-updates `Formula/echoview.rb` in `dayflower/homebrew-tap`. The source repository
-must have a `HOMEBREW_GITHUB_API_TOKEN` secret with Contents and Pull requests
-read/write access to that tap repository.
+updates `Formula/echoview.rb` in `dayflower/homebrew-tap` and enable auto-merge.
+The source repository must have a `HOMEBREW_GITHUB_API_TOKEN` secret with
+Contents and Pull requests read/write access to that tap repository. GitHub
+merges the pull request when the tap repository's merge requirements are met.
 
 To update the tap from an existing release, manually run the Release workflow
 with its `release_tag` input. Manual runs default to `dry_run: true`; set it to
-`false` to open the tap pull request. A manual run skips GoReleaser.
+`false` to open the tap pull request with auto-merge enabled. A manual run skips
+GoReleaser.
