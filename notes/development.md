@@ -44,6 +44,11 @@ matrix.
 
 Before tagging a release, run `make ci` and
 `goreleaser release --snapshot --clean` to inspect the artifacts under `dist/`.
+To create and push the next stable tag, run `bash tools/bump-version.sh minor`
+(or use `major` or `patch`). The script calculates the next `vX.Y.Z` tag from
+the tags on `origin`. It requires a clean working tree and a checked-out branch
+whose HEAD matches the branch on `origin`. It creates a local tag and pushes
+only that tag; if the push fails, the local tag remains for inspection.
 Pushing a `vX.Y.Z` tag runs the release workflow: it runs `make ci`, builds the
 artifacts with GoReleaser, and uploads them with checksums to GitHub Releases.
 GoReleaser also publishes Linux amd64 and arm64 container images to GHCR and
