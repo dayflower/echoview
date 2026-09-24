@@ -53,7 +53,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dayflower/brew-up@a05113ea737699ae9f7079a1683e222413f4644e # v1.2.2
-        id: brew_up
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -66,45 +65,9 @@ jobs:
           target-repo: dayflower/homebrew-tap
           target-branch: main
           target-repo-token: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
-          publish-mode: pr
+          publish-mode: pr-auto-merge
           only-if-changed: true
           dry-run: ${{ inputs.dry_run || false }}
           publish-title-template: 'chore: update echoview formula for {{tag_name}}'
           publish-body-template: 'Co-authored-by: codex <codex@openai.com>'
           publish-attribution: pr
-      - name: Wait for tap Ruby syntax check
-        if: ${{ steps.brew_up.outputs['pull-request-url'] != '' }}
-        env:
-          TAP_COMMIT_SHA: ${{ steps.brew_up.outputs['target-commit-sha'] }}
-        run: |
-          set -euo pipefail
-          : "${TAP_COMMIT_SHA:?brew-up did not return a tap commit SHA}"
-
-          for attempt in {1..40}; do
-            checks="$(curl --fail --silent --show-error --retry 3 \
-              --header 'Accept: application/vnd.github+json' \
-              "https://api.github.com/repos/dayflower/homebrew-tap/commits/${TAP_COMMIT_SHA}/check-runs?per_page=100")"
-            result="$(jq -r '
-              [.check_runs[] | select(.name == "ruby-syntax-check")]
-              | sort_by(.started_at) | last
-              | if . == null or .status != "completed" then "pending" else .conclusion end
-            ' <<< "$checks")"
-
-            if [[ "$result" == success ]]; then
-              exit 0
-            fi
-            if [[ "$result" != pending ]]; then
-              echo "tap Ruby syntax check finished with ${result}" >&2
-              exit 1
-            fi
-            sleep 15
-          done
-
-          echo 'timed out waiting for the tap Ruby syntax check' >&2
-          exit 1
-      - name: Merge tap pull request
-        if: ${{ steps.brew_up.outputs['pull-request-url'] != '' }}
-        env:
-          GH_TOKEN: ${{ secrets.HOMEBREW_GITHUB_API_TOKEN }}
-          PR_URL: ${{ steps.brew_up.outputs['pull-request-url'] }}
-        run: gh pr merge "$PR_URL" --squash --delete-branch
