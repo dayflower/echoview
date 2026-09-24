@@ -69,6 +69,52 @@ The binary is written to `bin/echoview`, with its packaged catalog in
 `bin/catalog/`. At startup, Echoview layers the OS-wide catalog directory,
 the executable-relative `catalog/` directory, and the user catalog directory.
 
+## Container image
+
+Build a Linux image for the local architecture:
+
+```sh
+docker build -t echoview:local .
+docker run --rm echoview:local --version
+```
+
+The image includes the base catalog and example vendor profiles beside the
+executable. It runs as a non-root user and accepts any `echoview` subcommand.
+The user catalog directory inside the image is `/config/echoview/catalog/`;
+mount additional catalog files there when needed.
+To set the version reported by `--version`, pass `--build-arg VERSION=...` when
+building the image. The build supports `linux/amd64` and `linux/arm64` targets.
+
+On a Linux host, use host networking so ECHONET Lite can bind UDP port `3610`
+on the selected local IPv4 interface and send multicast discovery requests.
+Mount a reviewed instances configuration read-only when running a recurring
+command:
+
+```sh
+docker run --rm --network host \
+  --mount type=bind,src="$(pwd)/instances.yaml",dst=/config/instances.yaml,readonly \
+  echoview:local exporter \
+  --config /config/instances.yaml \
+  --listen-address 0.0.0.0
+```
+
+The exporter serves `/metrics` and `/healthz` on TCP port `13610`. With host
+networking, Docker port publishing does not apply. Use `--interface` if the
+default route selects the wrong local IPv4 address. Docker Desktop host
+networking has different interface-binding behavior from Linux; verify access
+to the physical ECHONET Lite network before relying on it for discovery.
+
+The runtime image includes public CA certificates so `mqtts://` can verify a
+broker's TLS certificate. For a broker signed by a private CA, mount its CA
+certificate read-only and pass its path with `--tls-ca`. Neither certificates
+specific to a deployment nor MQTT credentials are included in the image.
+
+Tagged releases publish multi-architecture images to
+`ghcr.io/dayflower/echoview` and `docker.io/dayflower/echoview`. Both registries
+receive the full `vX.Y.Z` tag. Stable releases also update the `vX.Y` and `vX`
+tags; prereleases do not update those shorter tags. The release images reuse
+the binaries built by GoReleaser and include the same catalogs as local images.
+
 ## Quick start
 
 The examples below use the installed `echoview` command. If you built from

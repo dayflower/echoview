@@ -46,8 +46,18 @@ Before tagging a release, run `make ci` and
 `goreleaser release --snapshot --clean` to inspect the artifacts under `dist/`.
 Pushing a `vX.Y.Z` tag runs the release workflow: it runs `make ci`, builds the
 artifacts with GoReleaser, and uploads them with checksums to GitHub Releases.
+GoReleaser also publishes Linux amd64 and arm64 container images to GHCR and
+Docker Hub. The release job needs `packages: write` for GHCR and a
+`DOCKERHUB_TOKEN` repository secret for Docker Hub. Docker Hub login defaults
+to `dayflower`; set the `DOCKERHUB_USERNAME` repository variable if
+the token belongs to a different account with push access to the image.
+Create the `dayflower/echoview` Docker Hub repository before the first push.
+GHCR packages are private on first publication; set the package visibility
+separately if anonymous pulls are desired.
 GoReleaser sets the released binary's `--version` output from the tag; an
 ordinary `make build` retains the source default.
+The CI container job builds snapshot images for both Linux architectures
+without publishing them, so image packaging is checked before a tag release.
 
 After GoReleaser publishes a tagged release, the workflow uses
 [`brew-up`](https://github.com/dayflower/brew-up) to open a pull request that
