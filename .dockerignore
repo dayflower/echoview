@@ -1,0 +1,12 @@
+*
+!go.mod
+!go.sum
+!cmd/
+!cmd/**
+!internal/
+!internal/**
+!catalog/
+!catalog/echonet_lite_catalog.yaml
+!examples/
+!examples/profiles/
+!examples/profiles/**

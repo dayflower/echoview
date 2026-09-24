@@ -55,5 +55,24 @@ nfpms:
         dst: /etc/echoview/catalog/
         type: config|noreplace
 
+dockers_v2:
+  - id: echoview
+    dockerfile: Dockerfile.goreleaser
+    ids:
+      - echoview
+    images:
+      - ghcr.io/dayflower/echoview
+      - docker.io/dayflower/echoview
+    tags:
+      - "{{ .Tag }}"
+      - "{{ if not .Prerelease }}v{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not .Prerelease }}v{{ .Major }}{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    extra_files:
+      - catalog/echonet_lite_catalog.yaml
+      - examples/profiles/
+
 checksum:
   name_template: checksums.txt

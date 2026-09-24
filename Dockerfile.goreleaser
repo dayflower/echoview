@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+
+FROM gcr.io/distroless/static-debian13:nonroot
+
+ARG TARGETPLATFORM
+WORKDIR /app
+ENV XDG_CONFIG_HOME=/config
+COPY ${TARGETPLATFORM}/echoview /app/echoview
+COPY catalog/echonet_lite_catalog.yaml /app/catalog/
+COPY examples/profiles/ /app/catalog/
+
+EXPOSE 13610/tcp
+ENTRYPOINT ["/app/echoview"]
