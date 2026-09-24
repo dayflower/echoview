@@ -53,8 +53,10 @@ After GoReleaser publishes a tagged release, the workflow uses
 [`brew-up`](https://github.com/dayflower/brew-up) to open a pull request that
 updates `Formula/echoview.rb` in `dayflower/homebrew-tap`. The source repository
 must have a `HOMEBREW_GITHUB_API_TOKEN` secret with Contents and Pull requests
-read/write access to that tap repository.
+read/write access to that tap repository. The workflow merges the pull request
+with squash after the tap's `ruby-syntax-check` succeeds. A failed or missing
+check leaves the pull request open and fails the workflow.
 
 To update the tap from an existing release, manually run the Release workflow
 with its `release_tag` input. Manual runs default to `dry_run: true`; set it to
-`false` to open the tap pull request. A manual run skips GoReleaser.
+`false` to open and merge the tap pull request. A manual run skips GoReleaser.
