@@ -19,31 +19,40 @@ home-automation platform.
 
 ## Requirements
 
-- Go 1.25 or later to build from source.
-- An IPv4 network that can reach the target ECHONET Lite devices on UDP port
-  `3610`.
+An IPv4 network must be able to reach the target ECHONET Lite devices on UDP
+port `3610`.
 
 The installed catalog directory is loaded by default, so ordinary use does not
 require Python, `uv`, or an external MRA download.
 
 ## Install
 
-On macOS arm64, install with Homebrew:
+### GitHub Releases
 
-```sh
-brew install dayflower/tap/echoview
-echoview --version
-```
-
-The Homebrew package includes the catalog, so no separate catalog setup is
-needed. Prebuilt archives and Linux packages are available on
-[GitHub Releases](https://github.com/dayflower/echoview/releases), alongside
-`checksums.txt`:
+Download the archive or Linux package for your OS and architecture from
+[GitHub Releases](https://github.com/dayflower/echoview/releases). Download
+`checksums.txt` from the same release to verify the artifact before installing
+it. Compare its listed SHA-256 value with the output of `sha256sum` on Linux or
+`shasum -a 256` on macOS.
 
 | Platform | Artifacts |
 | --- | --- |
 | Linux amd64 and arm64 | `.tar.gz`, `.deb`, `.rpm` |
 | macOS arm64 | `.tar.gz` |
+
+For an archive, extract the entire archive into a directory you will keep. For
+example, after downloading the Linux amd64 archive, replace the filename below
+with the one you downloaded:
+
+```sh
+mkdir -p "$HOME/.local/opt/echoview"
+tar -xzf echoview_0.1.0_linux_amd64.tar.gz -C "$HOME/.local/opt/echoview"
+"$HOME/.local/opt/echoview/echoview" --version
+```
+
+Add `$HOME/.local/opt/echoview` to your `PATH` to run `echoview` without its
+full path. For a Linux package, install the downloaded `.deb` with `apt` or the
+`.rpm` with `dnf`, then run `echoview --version`.
 
 Each archive contains `echoview`, `README.md`, `LICENSE`, and a `catalog/`
 directory beside the executable. The archive catalog contains the generated
@@ -56,18 +65,17 @@ profiles become available for explicit assignment; they are never selected
 automatically. Catalog files under `/etc/echoview/catalog/` are treated as
 package configuration files so local edits are preserved during upgrades.
 
-## Build from source
+### Homebrew (macOS arm64)
 
-From the repository root:
+On macOS arm64, install with Homebrew:
 
 ```sh
-make build
-./bin/echoview --version
+brew install dayflower/tap/echoview
+echoview --version
 ```
 
-The binary is written to `bin/echoview`, with its packaged catalog in
-`bin/catalog/`. At startup, Echoview layers the OS-wide catalog directory,
-the executable-relative `catalog/` directory, and the user catalog directory.
+The Homebrew package includes the catalog, so no separate catalog setup is
+needed.
 
 ## Container image
 
@@ -321,6 +329,19 @@ English is the fallback. JSON retains both Japanese and English catalog names.
 The documented exit codes are `0` for completed work (including partial
 results), `2` for invalid command-line input, `3` for invalid startup
 configuration, and `4` for fatal runtime failures.
+
+## Build from source
+
+Building requires Go 1.25 or later. From the repository root:
+
+```sh
+make build
+./bin/echoview --version
+```
+
+The binary is written to `bin/echoview`, with its packaged catalog in
+`bin/catalog/`. At startup, Echoview layers the OS-wide catalog directory,
+the executable-relative `catalog/` directory, and the user catalog directory.
 
 ## Reference
 
