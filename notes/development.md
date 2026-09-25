@@ -64,6 +64,29 @@ ordinary `make build` retains the source default.
 The CI container job builds snapshot images for both Linux architectures
 without publishing them, so image packaging is checked before a tag release.
 
+The initial merge of `charts/echoview-prometheus/Chart.yaml` publishes chart
+version `0.1.0` to `oci://ghcr.io/dayflower/charts/echoview-prometheus` after
+checking that its default image tag exists. Later application releases create
+a chart version bump pull request after the image release succeeds. The bump is
+`patch` unless a chart release pull request is already open or the chart already
+uses the released image tag. Merge the pull request after its CI checks pass;
+the merge publishes the new chart version. The workflow will not overwrite an
+existing chart version with different content. Rerun the Publish Helm chart
+workflow on `main` to retry a failed publication.
+
+For a chart-only release or a compatibility-sensitive chart change, run the
+Prepare Helm chart release workflow manually with `patch`, `minor`, or `major`.
+Leave `app_version` empty to retain the current image, or supply a future
+`vX.Y.Z` tag. A manually prepared pull request blocks the automatic patch
+pull request. Merge it only after that image has been published. The workflow
+requires GitHub Actions to be allowed to create pull requests; pull requests
+created with `GITHUB_TOKEN` may require a maintainer to approve their CI runs.
+The chart version in `Chart.yaml` and its `appVersion` are independent; each
+published chart version must be unique. The publishing workflow uses
+`packages: write` and the repository's `GITHUB_TOKEN`. GHCR packages are
+private at first publication, so set the chart package to Public once if
+anonymous installation is desired.
+
 After GoReleaser publishes a tagged release, the workflow uses
 [`brew-up`](https://github.com/dayflower/brew-up) to open a pull request that
 updates `Formula/echoview.rb` in `dayflower/homebrew-tap` and enable auto-merge.

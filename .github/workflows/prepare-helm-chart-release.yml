@@ -1,0 +1,109 @@
+name: Prepare Helm chart release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the chart version to increase
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      app_version:
+        description: Image tag to use, or empty to keep the current appVersion
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      bump:
+        required: true
+        type: string
+      app_version:
+        required: true
+        type: string
+      automatic:
+        required: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: read
+
+concurrency:
+  group: echoview-prometheus-chart-release-preparation
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'dayflower/echoview'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.10'
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+        with:
+          version: v3.19.0
+      - name: Check for a pending chart release
+        id: pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTOMATIC: ${{ inputs.automatic }}
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          pending=$(gh pr list --base main --state open --limit 100 --json headRefName --jq '[.[] | select(.headRefName | startswith("chart-release/echoview-prometheus-"))] | length')
+          if [ "$pending" -ne 0 ]; then
+            if [ "$AUTOMATIC" = "true" ]; then
+              echo "A chart release PR is already open; skipping automatic preparation."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::Merge or close the existing chart release PR first."
+            exit 1
+          fi
+          current_app=$(sed -n 's/^appVersion: "\(.*\)"$/\1/p' charts/echoview-prometheus/Chart.yaml)
+          if [ "$AUTOMATIC" = "true" ] && [ "$APP_VERSION" = "$current_app" ]; then
+            echo "Chart already uses $APP_VERSION; skipping automatic preparation."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Log in to GHCR
+        if: steps.pending.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GH_TOKEN" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Verify the current chart is published
+        if: steps.pending.outputs.skip != 'true'
+        run: |
+          current_version=$(sed -n 's/^version: //p' charts/echoview-prometheus/Chart.yaml)
+          helm show chart oci://ghcr.io/dayflower/charts/echoview-prometheus --version "$current_version" > /dev/null
+      - name: Open version bump PR
+        if: steps.pending.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ inputs.bump }}
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          current_app=$(sed -n 's/^appVersion: "\(.*\)"$/\1/p' charts/echoview-prometheus/Chart.yaml)
+          image_tag=${APP_VERSION:-$current_app}
+          next_version=$(python3 tools/bump_helm_chart_version.py --bump "$BUMP" --app-version "$image_tag")
+          branch="chart-release/echoview-prometheus-$next_version-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          helm lint --strict charts/echoview-prometheus
+          helm template echoview-prometheus charts/echoview-prometheus > /dev/null
+          git switch -c "$branch"
+          git add charts/echoview-prometheus/Chart.yaml
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "chore: release echoview-prometheus chart $next_version" -m 'Co-authored-by: codex <codex@openai.com>'
+          git push origin "$branch"
+          cat > "$RUNNER_TEMP/chart-release-pr.md" <<EOF
+          Bump the Echoview Prometheus chart to $next_version and use image $image_tag by default.
+
+          Merge this PR after the image tag exists in GHCR. The chart publishing workflow checks the image and then pushes the chart package.
+          EOF
+          gh pr create --base main --head "$branch" --title "chore: release echoview-prometheus chart $next_version" --body-file "$RUNNER_TEMP/chart-release-pr.md"

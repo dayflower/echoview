@@ -36,6 +36,18 @@ kubectl -n echoview create configmap echoview-instances --from-file=instances.ya
 helm upgrade --install echoview-prometheus ./charts/echoview-prometheus --namespace echoview
 ```
 
+After the chart package is published and made public on GHCR, the Helm command
+can use the OCI reference instead of the local chart directory:
+
+```sh
+helm upgrade --install echoview-prometheus \
+  oci://ghcr.io/dayflower/charts/echoview-prometheus \
+  --version 0.1.0 --namespace echoview
+```
+
+The namespace and `echoview-instances` ConfigMap must exist as in the commands
+above. Choose the published chart version you want to install.
+
 The chart's default `instancesConfig.existingConfigMap` is
 `echoview-instances`, and its default key is `instances.yaml`. If the ConfigMap
 already has another name or key, set `instancesConfig.existingConfigMap` and

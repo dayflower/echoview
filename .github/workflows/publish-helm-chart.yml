@@ -1,0 +1,73 @@
+name: Publish Helm chart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - charts/echoview-prometheus/Chart.yaml
+      - .github/workflows/publish-helm-chart.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: echoview-prometheus-chart-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'dayflower/echoview' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4.3.1
+        with:
+          version: v3.19.0
+      - name: Validate and package the chart
+        id: chart
+        run: |
+          version=$(sed -n 's/^version: //p' charts/echoview-prometheus/Chart.yaml)
+          app_version=$(sed -n 's/^appVersion: "\(.*\)"$/\1/p' charts/echoview-prometheus/Chart.yaml)
+          test -n "$version"
+          test -n "$app_version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
+          helm lint --strict charts/echoview-prometheus
+          helm template echoview-prometheus charts/echoview-prometheus > /dev/null
+          helm template echoview-prometheus charts/echoview-prometheus --set serviceMonitor.enabled=true > /dev/null
+          helm package charts/echoview-prometheus --destination "$RUNNER_TEMP"
+      - uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify the image exists
+        env:
+          APP_VERSION: ${{ steps.chart.outputs.app_version }}
+        run: docker manifest inspect "ghcr.io/dayflower/echoview:$APP_VERSION" > /dev/null
+      - name: Log in to the chart registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GH_TOKEN" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Publish the chart if its version is new
+        env:
+          CHART_VERSION: ${{ steps.chart.outputs.version }}
+        run: |
+          chart=oci://ghcr.io/dayflower/charts/echoview-prometheus
+          mkdir -p "$RUNNER_TEMP/local-chart"
+          tar -xzf "$RUNNER_TEMP/echoview-prometheus-$CHART_VERSION.tgz" -C "$RUNNER_TEMP/local-chart"
+          mkdir -p "$RUNNER_TEMP/published-chart"
+          if helm pull "$chart" --version "$CHART_VERSION" --untar --untardir "$RUNNER_TEMP/published-chart" 2> "$RUNNER_TEMP/helm-pull-error"; then
+            diff -r "$RUNNER_TEMP/local-chart/echoview-prometheus" "$RUNNER_TEMP/published-chart/echoview-prometheus"
+            echo "Chart $CHART_VERSION is already published with identical content."
+            exit 0
+          fi
+          if ! grep -Eqi 'not found|manifest unknown|404|403: denied' "$RUNNER_TEMP/helm-pull-error"; then
+            cat "$RUNNER_TEMP/helm-pull-error"
+            exit 1
+          fi
+          helm push "$RUNNER_TEMP/echoview-prometheus-$CHART_VERSION.tgz" oci://ghcr.io/dayflower/charts
+          helm show chart "$chart" --version "$CHART_VERSION"
