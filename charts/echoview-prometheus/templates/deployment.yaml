@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "echoview-prometheus.fullname" . }}
+  labels:
+    {{- include "echoview-prometheus.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "echoview-prometheus.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "echoview-prometheus.podLabels" . | nindent 8 }}
+      {{- if not .Values.instancesConfig.existingConfigMap }}
+      annotations:
+        checksum/instances: {{ .Values.instancesConfig.content | sha256sum }}
+      {{- end }}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      automountServiceAccountToken: false
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 15
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: echoview
+          image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - exporter
+            - --config
+            - {{ printf "/etc/echoview/%s" .Values.instancesConfig.key | quote }}
+            - --listen-address
+            - 0.0.0.0
+            - --listen-port
+            - {{ .Values.exporter.listenPort | quote }}
+            - --data-timeout
+            - {{ .Values.exporter.dataTimeout | quote }}
+            - --data-attempts
+            - {{ .Values.exporter.dataAttempts | quote }}
+            {{- with .Values.exporter.interfaceAddress }}
+            - --interface
+            - {{ . | quote }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.exporter.listenPort }}
+              protocol: TCP
+            - name: echonet-lite
+              containerPort: 3610
+              protocol: UDP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: instances
+              mountPath: /etc/echoview
+              readOnly: true
+            {{- with .Values.catalog.existingConfigMap }}
+            - name: catalog
+              mountPath: /config/echoview/catalog
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: instances
+          configMap:
+            name: {{ include "echoview-prometheus.configMapName" . }}
+            items:
+              - key: {{ .Values.instancesConfig.key | quote }}
+                path: {{ .Values.instancesConfig.key | quote }}
+        {{- with .Values.catalog.existingConfigMap }}
+        - name: catalog
+          configMap:
+            name: {{ . | quote }}
+        {{- end }}

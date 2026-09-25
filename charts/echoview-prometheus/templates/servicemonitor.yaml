@@ -1,0 +1,16 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "echoview-prometheus.fullname" . }}
+  labels:
+    {{- include "echoview-prometheus.serviceMonitorLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "echoview-prometheus.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval | quote }}
+{{- end }}

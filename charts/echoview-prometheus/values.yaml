@@ -1,0 +1,43 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/dayflower/echoview
+  tag: ""
+  pullPolicy: IfNotPresent
+
+commonLabels: {}
+podLabels: {}
+nodeSelector: {}
+
+instancesConfig:
+  existingConfigMap: echoview-instances
+  name: ""
+  key: instances.yaml
+  content: ""
+
+catalog:
+  existingConfigMap: ""
+
+exporter:
+  listenPort: 13610
+  interfaceAddress: ""
+  dataTimeout: 20s
+  dataAttempts: 1
+
+service:
+  port: 13610
+  labels: {}
+
+serviceMonitor:
+  enabled: false
+  labels:
+    release: kube-prom-stack
+  interval: 60s
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    memory: 256Mi
