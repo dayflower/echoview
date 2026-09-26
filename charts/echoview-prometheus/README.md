@@ -42,7 +42,7 @@ can use the OCI reference instead of the local chart directory:
 ```sh
 helm upgrade --install echoview-prometheus \
   oci://ghcr.io/dayflower/charts/echoview-prometheus \
-  --version 0.1.0 --namespace echoview
+  --version 0.1.1 --namespace echoview
 ```
 
 The namespace and `echoview-instances` ConfigMap must exist as in the commands
@@ -126,11 +126,13 @@ exporter:
   dataAttempts: 2
 ```
 
-The files are mounted in Echoview's default user catalog directory alongside
-the image's bundled catalog directory. Each ConfigMap key must end in `.yaml`
-or `.yml`. Updating the ConfigMap requires a Deployment restart because
-Echoview loads catalogs only at startup. A profile is used only when referenced
-by `instances.yaml`.
+The chart explicitly loads the image's bundled catalog from `/app/catalog`
+and, when `catalog.existingConfigMap` is set, the additional files mounted at
+`/config/echoview/catalog`. Unused default catalog directories are not searched,
+so their absence does not produce startup warnings. Each ConfigMap key must
+end in `.yaml` or `.yml`. Updating the ConfigMap requires a Deployment restart
+because Echoview loads catalogs only at startup. A profile is used only when
+referenced by `instances.yaml`.
 
 The chart keeps its Pod and Service selector labels stable. Additional labels
 can be changed independently without breaking that connection.
