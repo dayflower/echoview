@@ -38,6 +38,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
             - exporter
+            - --catalog-dir
+            - /app/catalog
+            {{- with .Values.catalog.existingConfigMap }}
+            - --catalog-dir
+            - /config/echoview/catalog
+            {{- end }}
             - --config
             - {{ printf "/etc/echoview/%s" .Values.instancesConfig.key | quote }}
             - --listen-address
