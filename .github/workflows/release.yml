@@ -55,6 +55,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  prepare-helm-chart:
+    needs: release
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: read
+    uses: ./.github/workflows/prepare-helm-chart-release.yml
+    with:
+      bump: patch
+      app_version: ${{ github.ref_name }}
+      automatic: true
+
   homebrew:
     needs: release
     if: ${{ always() && (github.event_name == 'workflow_dispatch' || needs.release.result == 'success') }}

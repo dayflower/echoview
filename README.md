@@ -123,6 +123,9 @@ receive the full `vX.Y.Z` tag. Stable releases also update the `vX.Y` and `vX`
 tags; prereleases do not update those shorter tags. The release images reuse
 the binaries built by GoReleaser and include the same catalogs as local images.
 
+For a Kubernetes deployment, see the
+[Helm chart guide](charts/echoview-prometheus/README.md).
+
 ## Quick start
 
 The examples below use the installed `echoview` command. If you built from

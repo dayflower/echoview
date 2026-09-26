@@ -1,0 +1,12 @@
+{{- if not .Values.instancesConfig.existingConfigMap }}
+{{- $content := required "Set instancesConfig.content when instancesConfig.existingConfigMap is empty" .Values.instancesConfig.content }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "echoview-prometheus.configMapName" . }}
+  labels:
+    {{- include "echoview-prometheus.labels" . | nindent 4 }}
+data:
+  {{ .Values.instancesConfig.key | quote }}: |-
+{{ $content | indent 4 }}
+{{- end }}
