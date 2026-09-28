@@ -218,6 +218,10 @@ echoview exporter \
 Binding to a non-loopback address makes metrics reachable by other hosts. Put
 an appropriate firewall or reverse proxy in front of that endpoint.
 
+Example Grafana dashboard using the Prometheus metrics:
+
+![Grafana dashboard showing ECHONET Lite power and battery metrics](notes/screenshot.webp)
+
 ### Publish to MQTT
 
 ```sh
